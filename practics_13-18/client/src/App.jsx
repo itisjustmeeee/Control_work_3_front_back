@@ -6,57 +6,70 @@ import { subscribeToPush, unsubscribeFromPush } from './push/PushService';
 
 function App() {
 
-  useEffect(() => {
-    socket.on("connect", () => {
-      console.log("connected:", socket.id);
-    });
-
-    return () => {
-      socket.off("connect");
-    };
-  }, []);
-
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(() => console.log('SW registered'))
-        .catch(err => console.log('SW failed', err));
-    }
-  }, []);
-
   const [todos, setTodos] = useState(() => {
     const saved = localStorage.getItem('todos');
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [notification, setNotification] = useState(null);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("connected:", socket.id);
+    });
+
+    return () => socket.off("connect");
+  }, []);
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .catch(err => console.log('SW failed', err));
+    }
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('todos', JSON.stringify(todos));
   }, [todos]);
 
-  const [notification, setNotification] = useState(null);
-
   useEffect(() => {
     socket.on("taskAdded", (task) => {
-      console.log("Новая задача:", task);
-
       setTodos(prev => [...prev, task]);
 
       setNotification(`Новая задача: ${task.text}`);
-
-      setTimeout(() => {
-        setNotification(null);
-      }, 3000);
+      setTimeout(() => setNotification(null), 3000);
     });
 
-    return () => {
-      socket.off("taskAdded");
-    };
+    return () => socket.off("taskAdded");
   }, []);
 
-  const addTodo = (text) => {
+  useEffect(() => {
+    socket.on('reminderTriggered', (task) => {
+      setNotification(`Напоминание: ${task.text}`);
+      setTimeout(() => setNotification(null), 3000);
+    });
+
+    return () => socket.off('reminderTriggered');
+  }, []);
+
+  useEffect(() => {
+    socket.on('reminderUpdated', (updatedTask) => {
+      setTodos(prev => 
+        prev.map(todo => 
+          todo.id === updatedTask.id ? updatedTask : todo
+        )
+      );
+    });
+
+    return () => socket.off('reminderUpdated');
+  }, []);
+
+  const addTodo = ({text, reminder}) => {
     const newTodo = {
       id: Date.now(),
       text,
+      reminder,
       completed: false
     };
     
@@ -74,12 +87,8 @@ function App() {
   };
 
   const deleteTodo = (id) => {
-    setTodos(
-      todos.filter(todo => todo.id !== id)
-    );
+    setTodos(todos.filter(todo => todo.id !== id));
   };
-
-  const [isSubscribed, setIsSubscribed] = useState(false);
 
   const handleSubscribe = async () => {
     await subscribeToPush();
@@ -92,7 +101,7 @@ function App() {
   };
 
   useEffect(() => {
-    async function checkSubscription() {
+    async function check() {
       if (!('serviceWorker' in navigator)) return;
 
       const reg = await navigator.serviceWorker.ready;
@@ -100,7 +109,7 @@ function App() {
       setIsSubscribed(!!sub);
     }
 
-    checkSubscription();
+    check();
   }, []);
 
   return(
@@ -120,6 +129,7 @@ function App() {
       </footer>
 
       <TodoForm onAdd={addTodo}/>
+
       <TodoList 
         todos={todos} 
         onToggle={toggleTodo} 
