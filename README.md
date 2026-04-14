@@ -10,9 +10,15 @@
 ## Реализованные вещи
 
 В данном проекте реализованы:
-1. Скачивание приложения на устройство
-2. Получение push уведомлений
-3. Откладывание напоминаний на 5 минут
+1. Создание заметок
+2. Удаление заметок
+3. Отметка заметок, как выполненные
+4. Настройка времени напоминания о созданной заметке
+5. Стабильная работа приложения в off-line режиме
+6. Активация подписки на получение уведомлений и отписка от получения уведомлений
+7. Скачивание приложения на устройство и его стабильная работа
+8. Откладывание напоминаний на 5 минут
+9. Скрытие напоминания
 
 ## Использованные языки
 
@@ -65,6 +71,25 @@ npm run dev
 ```
 
 Затем откройте полученную на client ссылку в браузере
+
+## Структура проекта
+
+- [practics_13-18/server](practics_13-18/server): папка с бэкендом
+- [practics_13-18/client](practics_13-18/client): папка с фронтендом
+- [practics_13-18/server/server.js](practics_13-18/server/server.js): файл с основным кодом бэкенда для работы приложения
+- [practics_13-18/client/icons](practics_13-18/client/icons): папка с иконками для приложения
+- [practics_13-18/client/public/sw.js](practics_13-18/client/public/sw.js): ServiceWorker-файл, который действует как прокси-сервер, перехватывая сетевые запросы, управляя кешированием, обеспечивая офлайн-работу, push-уведомления и фоновую синхронизацию данных
+- [practics_13-18/client/src](practics_13-18/client/src): основная папка с файлами фронтенда
+- [practics_13-18/client/src/TodoForm.jsx](practics_13-18/client/src/TodoForm.jsx): файл с формой для создания новой заметки
+- [practics_13-18/client/src/TodoItem.jsx](practics_13-18/client/src/TodoItem.jsx): файл, в котором реализована карточка каждого напоминания
+- [practics_13-18/client/src/TodoList.jsx](practics_13-18/client/src/TodoList.jsx): файл, в котором реализовано отображение списка заметок
+- [practics_13-18/client/src/App.jsx](practics_13-18/client/src/App.jsx): основной файл, необходимый для работы приложения
+- [practics_13-18/client/src/push](practics_13-18/client/src/push): папка с файлом, который работает с подпиской
+- [practics_13-18/client/src/push/PushService.js](practics_13-18/client/src/push/PushService.js): файл, с помощью которого инициализируется и отменяется подписка
+- [practics_13-18/client/src/utils](practics_13-18/client/src/utils): папка с файлом, который переводит значение ключа VAPID-ключа в нужный браузеру формат
+- [practics_13-18/client/src/utils/push.js](practics_13-18/client/src/utils/push.js): файл с функцией, которая переводит занчение VAPID-ключа из base64 в формат, понятный браузеру
+- [practics_13-18/client/index.html](practics_13-18/client/index.html): основной файл для инициализации страницы
+- [practics_13-18/client/manifest.json](practics_13-18/client/manifest.json): файл, который содержит метаданные, конфигурацию и инструкции для браузеров о том, как обрабатывать веб-расширения и программные модули
 
 ## Важные аспекты
 
